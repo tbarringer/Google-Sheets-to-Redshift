@@ -1,0 +1,28 @@
+First query: creating a table for your data
+
+CREATE TABLE public.city_state (
+	state VARCHAR
+	, city VARCHAR
+	
+);
+
+
+Second query: creating a stored procedure to pull data from S3
+Note: for credentials, you can use an AWS IAM role or access keys
+
+CREATE PROCEDURE s3_csv_import()
+AS $$
+	BEGIN
+	copy city_state from 's3://<YOUR-BUCKET-NAME-HERE>/<FILENAME>.csv'
+	credentials 'YOUR-CREDENTIALS-HERE'
+	IGNOREHEADER 1
+	csv;
+	END;
+$$
+LANGUAGE plpgsql
+;
+
+Third query: calling your stored procedure
+
+CALL s3_csv_import();
+
