@@ -13,29 +13,29 @@ Our first step in the process is to allow programmatic access to Google Sheets v
 
 1.	Create your Google Sheet that you wish to (ultimately) upload to Redshift. I have named mine “State-City-Key” with two columns, State and City. 
 
-![Google Sheet](screenshots/Google1.PNG)
+![Google Sheet](Screenshots/Google1.PNG)
 
 2.	Next, go to console.developers.google.com and create a project if you have not done so already. Choose a name for your project and leave ‘Location’ set to ‘No Organization’. Click CREATE. 
 
-![Google API](screenshots/Google2.PNG)
+![Google API](Screenshots/Google2.PNG)
 
 3.	 Within the project, click the “Library” on the left-side menu. Search for the Google Drive API and select it. Click “Enable”. 
 
-![Google API Library](screenshots/Google4.PNG)
+![Google API Library](Screenshots/Google4.PNG)
 
-![Google Drive API](screenshots/Google5.PNG)
+![Google Drive API](Screenshots/Google5.PNG)
 
 4.	Click CREATE CREDENTIALS to enter Google’s credentials wizard. 
 
-![Google Drive API](screenshots/Google6.PNG) 
+![Google Drive API](Screenshots/Google6.PNG) 
 
 For “Which API are you using” select “Google Drive API”. “Where will you be calling the API from” is “Web server”. You will be processing “Application data” and will not be using this API with the App or Compute Engine. Click “What credentials do I need?” 
 
-![Google Drive API](screenshots/Google7.PNG)
+![Google Drive API](Screenshots/Google7.PNG)
 
 5.	Enter a service account name, mark the role as Editor, and keep the key type as JSON. Click Continue. 
 
-![Google Drive API](screenshots/Google8.PNG)
+![Google Drive API](Screenshots/Google8.PNG)
 
 6.	A JSON file will be automatically downloaded to your computer. Keep this file safe; it has the access keys to your Google API. Open this file. There will be an entry for ‘client_email’ – copy this email address. It will be required in the next step. 
 7.	Go to your Google Sheet created in Step 1. Click ‘File’ and then ‘Share’. Enter the email address from step 6 into the email field and click ‘Share’. This allows your API access to the Google Sheet. 
@@ -49,7 +49,7 @@ This next part is easy – we’re going to create an S3 bucket on AWS to hold o
 1.	On the AWS console, go to S3 and click Create Bucket
 2.	Enter a compliant bucket name and click next
 
-![AWS S3 Bucket CreationI](screenshots/S1.PNG)
+![AWS S3 Bucket CreationI](Screenshots/S1.PNG)
 
 3.	Click through the next screens (keeping the default values) until you can click “Create Bucket” 
 That’s it! You have an S3 bucket live on AWS. 
@@ -63,16 +63,16 @@ Note: everything required for this Lambda function, including packages and a zip
 1.	From the AWS Console go to Lambda and click “Create Function”. 
 2.	Select “Author From Scratch”, create a function name, and select Python 3.7 for the runtime. Click “Create function” 
 
-![AWS Lambda](screenshots/S3L1.PNG)
+![AWS Lambda](Screenshots/S3L1.PNG)
 
 3.	Under function code, select “Upload from .zip”. 
 
-![AWS Lambda](screenshots/S3L2.PNG)
+![AWS Lambda](Screenshots/S3L2.PNG)
 
 We need to do this because we’re going to have to use a couple libraries not included in the basic Lambda package. We will create a new directory on our local computer, create a file in the directory that holds our Lambda function, and pip install libraries directly to the directory. We will then zip the contents of this directory and upload the file to AWS. 
 4.	On your local computer, create a new directory. In that directory, use “pip install gspread oauth2client --target .” to install two dependencies directly into your directory (we will be using both gpsread and oauth2 in our lambda function)
 
-![AWS Lambda](screenshots/S3L3.PNG)
+![AWS Lambda](Screenshots/S3L3.PNG)
 
 5.	Create a new file in the directory named lambda_function.py (name is important); this will be where your code lives. First, import all of your required libraries:
 ```python
@@ -137,20 +137,20 @@ Finally, we will open our Google Sheet, grab all of its values, write it to a cs
 6.	Zip the entire directory (highlight all of the files, including the libraries) and send it to a Zip file
 7.	Upload this ZIP to AWS Lambda. If the upload was successful you should see your code in the built-in editor.
 
-![AWS Lambda](screenshots/S3L4.PNG)
+![AWS Lambda](Screenshots/S3L4.PNG)
 
 8.	We’re now going to add our environment variables to the Lambda function and encrypt them. The first step is translating the values from your JSON credentials file (from Google) into environment variables. Enter each key value pair from the JSON file, making sure you match the key names that you have entered in your Lambda code. At a high level, the function will take the environment values you entered and transform them into a new JSON dictionary that Google’s authentication service is able to use to verify access to its APIs.
 
-![AWS Lambda](screenshots/S3L5.PNG)
+![AWS Lambda](Screenshots/S3L5.PNG)
 
 9.	The next step encrypts these environment variables to add an additional layer of security for your data pipeline. In the AWS console, search for and open the Key Management System. Click “Create a key” to get started. 
 
-![AWS Lambda](screenshots/S3L6.PNG)
+![AWS Lambda](Screenshots/S3L6.PNG)
 
 10.	In the Key creation wizard, select “Symmetric” and then click Next. Choose a name for your key. Under key administrators, choose your AWS IAM role. For key usage permissions, select your AWS IAM role again. Review your key policy and click Finish.
 11.	Go back to your Lambda function and open the “Encryption Configuration” dropdown. Check the “Enable helpers for encryption in transit”. Then, in the “AWS KMS key to encrypt in transit” text box, begin typing the name of your key you just created. 
 
-![AWS Lambda](screenshots/S3L7.PNG)
+![AWS Lambda](Screenshots/S3L7.PNG)
 
 Select this key. Now, you can press the “Encrypt” button in your key value pairs to encrypt them right in Lambda! 
 
@@ -164,7 +164,7 @@ In this section, we’re going to create a [stored procedure](https://docs.aws.a
 1.	We are now ready to prepare our Redshift database for the incoming data. Go to the Redshift console in AWS. Open the Query Editor. 
 2.	The first query in Redshift will be to create the table that will import the data. In my example, I am creating a simple table with two columns, State and City. 
 
-![AWS Redshift](screenshots/Redshift_Query1.PNG)
+![AWS Redshift](Screenshots/Redshift_Query1.PNG)
 
 ```
 CREATE TABLE public.city_state (
@@ -176,7 +176,7 @@ CREATE TABLE public.city_state (
 
 3.	The next query will be to create a Stored Procedure in Redshift. As mentioned before, stored procedures are queries you can “Save” in Redshift and call them later with a simple “Call” query. They are valuable because the permissions of the stored procedure can be set within Redshift itself, giving us one less thing to worry about when we’re using Lambda to programmatically access Redshift. The stored procedure query is below: 
 
-![AWS Lambda](screenshots/Redshift_Query2.PNG)
+![AWS Lambda](Screenshots/Redshift_Query2.PNG)
 
 ```
 CREATE PROCEDURE s3_csv_import()
@@ -236,6 +236,6 @@ Note: to find the 'host' value for your Redshift database, go to the Redshift co
 5.	In the AWS Lambda console, create a new Lambda function and upload the zip file that you just created. 
 6.	As before, create a Test event and run the test on Lambda. If everything executes correctly, go to Redshift and check your table to verify the contents of the csv uploaded as intended. 
 
-![AWS Lambda](screenshots/Redshift_Query3.PNG)
+![AWS Lambda](Screenshots/Redshift_Query3.PNG)
 Congratulations, you now have a data pipeline from Google Sheets to AWS Redshift! 
 7.	You can now create a CloudWatch event to run this function automatically so the pipeline continues to flow. 
