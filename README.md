@@ -13,7 +13,7 @@ Our first step in the process is to allow programmatic access to Google Sheets v
 
 1.	Create your Google Sheet that you wish to (ultimately) upload to Redshift. I have named mine “State-City-Key” with two columns, State and City. 
 
-![Google Sheet](Screenshots/Google1.PNG)
+![Google Sheet](screenshots/Google1.PNG)
 
 2.	Next, go to console.developers.google.com and create a project if you have not done so already. Choose a name for your project and leave ‘Location’ set to ‘No Organization’. Click CREATE. 
 
